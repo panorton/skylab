@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The Product VPC Stack
+Parameters:
+  CreationDate:
+    Description: Date
+    Type: String
+    Default: '2019-02-05 08:00:00'
+    AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
+    ConstraintDescription: Date and time of creation
