@@ -7,3 +7,8 @@ Parameters:
     Default: '2019-02-05 08:00:00'
     AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
     ConstraintDescription: Date and time of creation
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: 10.0.0.0/16
