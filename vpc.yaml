@@ -12,3 +12,47 @@ Resources:
     Type: AWS::EC2::VPC
     Properties: 
       CidrBlock: 10.0.0.0/16
+      Tags:
+      - Key: Name
+        Value: TheProduct-VPC
+  PubSubnet2A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: "us-west-2a"
+      Tags:
+      - Key: Name
+        Value: TheProduct-Public-2A
+  PubSubnet2B:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: "us-west-2b"
+      Tags:
+      - Key: Name
+        Value: TheProduct-Public-2B
+  PrivSubnet2A:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: "us-west-2a"
+      Tags:
+      - Key: Name
+        Value: TheProduct-Private-2A
+  PrivSubnet2B:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: "us-west-2b"
+      Tags:
+      - Key: Name
+        Value: TheProduct-Private-2B
+        
