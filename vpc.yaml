@@ -55,4 +55,33 @@ Resources:
       Tags:
       - Key: Name
         Value: TheProduct-Private-2B
-        
+  myInetGw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: TheProduct-InetGw
+  myInetGwAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: 
+        Ref: myInetGw
+      VpcId: 
+        Ref: myVPC
+  NatGw2AEIP:
+    DependsOn: myInetGwAttach
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  NATGw2A:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: 
+        Fn::GetAtt:
+        - NatGw2AEIP
+        - AllocationId
+      SubnetId:
+        Ref: PrivSubnet2A
+      Tags:
+      - Key: Name
+        Value: TheProduct-NatGateway-2A
