@@ -86,7 +86,7 @@ Resources:
         - NatGw2AEIP
         - AllocationId
       SubnetId:
-        Ref: PrivSubnet2A
+        Ref: PubSubnet2A
       Tags:
       - Key: Name
         Value: TheProduct-NatGateway-2A
@@ -98,7 +98,78 @@ Resources:
         - NatGw2BEIP
         - AllocationId
       SubnetId:
-        Ref: PrivSubnet2B
+        Ref: PubSubnet2B
       Tags:
       - Key: Name
         Value: TheProduct-NatGateway-2B
+  RouteTablePriv2A:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: theproduct-routetable-private2a
+  RouteNatGW2A:
+    Type: AWS::EC2::Route
+    DependsOn: myInetGw
+    Properties: 
+      RouteTableId:
+        Ref: RouteTablePriv2A
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NATGw2A
+  RouteTablePriv2AAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTablePriv2A
+      SubnetId: 
+        Ref: PrivSubnet2A
+  RouteTablePriv2B:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: theproduct-routetable-private2b
+  RouteNatGW2B:
+    Type: AWS::EC2::Route
+    DependsOn: myInetGw
+    Properties: 
+      RouteTableId:
+        Ref: RouteTablePriv2B
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NATGw2B
+  RouteTablePriv2BAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTablePriv2B
+      SubnetId: 
+        Ref: PrivSubnet2B
+  RouteTablesPub2A:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: theproduct-routetable-public2a
+  RouteInetGw:
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId:
+        Ref: RouteTablesPub2A
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: myInetGw
+  RouteTablePub2AAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTablesPub2A
+      SubnetId: 
+        Ref: PubSubnet2A
