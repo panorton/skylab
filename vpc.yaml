@@ -150,7 +150,7 @@ Resources:
         Ref: RouteTablePriv2B
       SubnetId: 
         Ref: PrivSubnet2B
-  RouteTablesPub2A:
+  RouteTablePub2A:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId:
@@ -158,11 +158,11 @@ Resources:
       Tags:
       - Key: Name
         Value: theproduct-routetable-public2a
-  RouteInetGw:
+  RouteInetGw2A:
     Type: AWS::EC2::Route
     Properties: 
       RouteTableId:
-        Ref: RouteTablesPub2A
+        Ref: RouteTablePub2A
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId:
         Ref: myInetGw
@@ -170,6 +170,29 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId:
-        Ref: RouteTablesPub2A
+        Ref: RouteTablePub2A
       SubnetId: 
         Ref: PubSubnet2A
+  RouteTablePub2b:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: theproduct-routetable-public2b
+  RouteInetGw2b:
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId:
+        Ref: RouteTablePub2b
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: myInetGw
+  RouteTablePub2bAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: RouteTablePub2b
+      SubnetId: 
+        Ref: PubSubnet2B
