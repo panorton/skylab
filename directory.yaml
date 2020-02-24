@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The Product Directory Service Stack
+Parameters:
+  CreationDate:
+    Description: Date
+    Type: String
+    Default: '2019-02-05 08:00:00'
+    AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
+    ConstraintDescription: Date and time of creation
+  myPassword: 
+    NoEcho: true
+    Description: The password for the default administrative user named Admin
+    Type: String
+    MinLength: 12
+    MaxLength: 32
+    AllowedPattern: ^[a-zA-Z0-9]*$
+Resources:
+  myDirectory:
+    Type: AWS::DirectoryService::MicrosoftAD
+    Properties:
+      Name: "theproduct.internal"
+      Edition: Standard
+      Password:
+        Ref: myPassword
+      VpcSettings:
+        SubnetIds:
+          - !ImportValue vpc-privsubnet2a-id
+          - !ImportValue vpc-privsubnet2b-id
+        VpcId: !ImportValue vpc-vpcid
