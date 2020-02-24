@@ -196,3 +196,34 @@ Resources:
         Ref: RouteTablePub2b
       SubnetId: 
         Ref: PubSubnet2B
+Outputs:
+  vpcidoutput:
+    Description: Resource ID of VPC
+    Value:
+      Ref: myVPC
+    Export:
+      Name: vpc-vpcid
+  pubsubnet2aoutput:
+    Description: Resource ID of the Public Subnet 2a
+    Value:
+      Ref: PubSubnet2A
+    Export:
+      Name: vpc-pubsubnet2a-id
+  pubsubnet2boutput:
+    Description: Resource ID of the Public Subnet 2b
+    Value:
+      Ref: PubSubnet2B
+    Export:
+      Name: vpc-pubsubnet2b-id
+  privsubnet2aoutput:
+    Description: Resource ID of the Private Subnet 2a
+    Value:
+      Ref: PrivSubnet2A
+    Export:
+      Name: vpc-privsubnet2a-id
+  privsubnet2boutput:
+    Description: Resource ID of the Private Subnet 2b
+    Value:
+      Ref: PrivSubnet2B
+    Export:
+      Name: vpc-privsubnet2b-id
