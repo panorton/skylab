@@ -27,3 +27,25 @@ Resources:
           - !ImportValue vpc-privsubnet2a-id
           - !ImportValue vpc-privsubnet2b-id
         VpcId: !ImportValue vpc-vpcid
+  myDHCPOptions:
+    Type: AWS::EC2::DHCPOptions
+    Properties:
+      DomainName: theproduct.internal
+      DomainNameServers:
+        - !Select [0, !GetAtt myDirectory.DnsIpAddresses]
+        - !Select [1, !GetAtt myDirectory.DnsIpAddresses]
+      NtpServers:
+        - !Select [0, !GetAtt myDirectory.DnsIpAddresses]
+        - !Select [1, !GetAtt myDirectory.DnsIpAddresses]
+      NetbiosNameServers: 
+        - !Select [0, !GetAtt myDirectory.DnsIpAddresses]
+        - !Select [1, !GetAtt myDirectory.DnsIpAddresses]
+      NetbiosNodeType: 2
+      Tags:
+      - Key: Name
+        Value: theproduct-dhcpopt
+  myDHCPOptionsAssoc:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    Properties:
+      VpcId: !ImportValue vpc-vpcid
+      DhcpOptionsId: !Ref myDHCPOptions
