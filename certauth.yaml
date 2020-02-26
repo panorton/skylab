@@ -12,7 +12,7 @@ Resources:
     Type: "AWS::S3::Bucket"
     DeletionPolicy: Retain # RETAIN when you delete the CF stack
     Properties:
-      BucketName: ca-crl-bucket
+      BucketName: theproduct-ca-crl-bucket
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -22,7 +22,24 @@ Resources:
       Tags:
         -
           Key: "Name"
-          Value: "ca-crl-bucket" #Enter your bucket name here
+          Value: "theproduct-ca-crl-bucket" #Enter your bucket name here
         -
           Key: "Description"
           Value: "S3 Bucket for CA CRL" #Enter your description here
+  CRLBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref CRLBucket
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: acm-pca.amazonaws.com
+          Action:
+          - s3:PutObject
+          - s3:PutObjectAcl
+          - s3:GetBucketAcl
+          - s3:GetBucketLocation
+          Resource:
+            - !Sub arn:aws:s3:::${CRLBucket}/*
+            - !Sub arn:aws:s3:::${CRLBucket}
