@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The Product Certificate Authority Stack
+Parameters:
+  CreationDate:
+    Description: Date
+    Type: String
+    Default: '2019-02-05 08:00:00'
+    AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
+    ConstraintDescription: Date and time of creation
+Resources:
+  CRLBucket:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain # RETAIN when you delete the CF stack
+    Properties:
+      BucketName: ca-crl-bucket
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        -
+          Key: "Name"
+          Value: "ca-crl-bucket" #Enter your bucket name here
+        -
+          Key: "Description"
+          Value: "S3 Bucket for CA CRL" #Enter your description here
