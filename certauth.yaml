@@ -43,3 +43,41 @@ Resources:
           Resource:
             - !Sub arn:aws:s3:::${CRLBucket}/*
             - !Sub arn:aws:s3:::${CRLBucket}
+  PrivateCA:
+    Type: AWS::ACMPCA::CertificateAuthority
+    Properties:
+      Type: ROOT
+      KeyAlgorithm: RSA_2048
+      SigningAlgorithm: SHA256WITHRSA
+      Subject:
+        Country: US
+        State: California
+        Locality: La Jolla
+        Organization: The Product
+        OrganizationalUnit: Information Technology
+        CommonName: theproduct.internal
+      RevocationConfiguration:
+        CrlConfiguration:
+          Enabled: true
+          ExpirationInDays: 7
+          S3BucketName: !Ref CRLBucket
+  RootCert:
+    Type: AWS::ACMPCA::Certificate
+    Properties:
+      CertificateAuthorityArn: !Ref PrivateCA
+      CertificateSigningRequest: !GetAtt
+        - PrivateCA
+        - CertificateSigningRequest
+      SigningAlgorithm: SHA256WITHRSA
+      TemplateArn: 'arn:aws:acm-pca:::template/RootCACertificate/V1'
+      Validity:
+        Type: YEARS
+        Value: 10
+  PrivateCAActivation:
+    Type: 'AWS::ACMPCA::CertificateAuthorityActivation'
+    Properties:
+      CertificateAuthorityArn: !Ref PrivateCA
+      Certificate: !GetAtt 
+        - RootCert
+        - Certificate
+      Status: ACTIVE
