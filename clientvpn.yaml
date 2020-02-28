@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: The Product Client VPN Stack
+Parameters:
+  CreationDate:
+    Description: Date
+    Type: String
+    Default: '2019-02-05 08:00:00'
+    AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
+    ConstraintDescription: Date and time of creation
+Resources:
+  ClientVPNSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !ImportValue vpc-vpcid
+      CidrBlock: 10.0.4.0/24
+      AvailabilityZone: "us-west-2a"
+      Tags:
+      - Key: Name
+        Value: TheProduct-ClientVPNSubnet
