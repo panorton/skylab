@@ -17,3 +17,26 @@ Resources:
       Tags:
       - Key: Name
         Value: TheProduct-ClientVPNSubnet
+  myClientVpnEndpoint:
+    Type: AWS::EC2::ClientVpnEndpoint
+    Properties:
+      Description: "My Client VPN Endpoint"
+      AuthenticationOptions:
+        - Type: "directory-service-authentication"
+          ActiveDirectory:
+              DirectoryId: !ImportValue myDirectory
+      ClientCidrBlock: 10.0.248.0/22
+      ConnectionLogOptions:
+        Enabled: false
+      DnsServers:
+        - !ImportValue myDirectoryDNS1
+        - !ImportValue myDirectoryDNS2
+      # ServerCertificateArn: !ImportValue RootCert
+      ServerCertificateArn: arn:aws:acm:us-west-2:648971150110:certificate/29fe637f-6004-4969-95d2-7d0b697c6233
+      TagSpecifications:
+        - ResourceType: "client-vpn-endpoint"
+          Tags:
+          - Key: "Name"
+            Value: "theproduct-clientvpn"
+      TransportProtocol: "udp"
+      SplitTunnel: true
