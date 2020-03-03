@@ -31,7 +31,6 @@ Resources:
       DnsServers:
         - !ImportValue myDirectoryDNS1
         - !ImportValue myDirectoryDNS2
-      # ServerCertificateArn: !ImportValue RootCert
       ServerCertificateArn: arn:aws:acm:us-west-2:648971150110:certificate/29fe637f-6004-4969-95d2-7d0b697c6233
       TagSpecifications:
         - ResourceType: "client-vpn-endpoint"
@@ -40,3 +39,14 @@ Resources:
             Value: "theproduct-clientvpn"
       TransportProtocol: "udp"
       SplitTunnel: true
+  myClientVpnEndpointAssoc:
+    Type: AWS::EC2::ClientVpnTargetNetworkAssociation
+    Properties:
+      ClientVpnEndpointId: !Ref myClientVpnEndpoint
+      SubnetId: !Ref ClientVPNSubnet
+  myClientVpnEndpointAuth:
+    Type: AWS::EC2::ClientVpnAuthorizationRule
+    Properties:
+      ClientVpnEndpointId: !Ref myClientVpnEndpoint
+      AuthorizeAllGroups: true
+      TargetNetworkCidr: 10.0.0.0/16
