@@ -49,3 +49,19 @@ Resources:
     Properties:
       VpcId: !ImportValue vpc-vpcid
       DhcpOptionsId: !Ref myDHCPOptions
+Outputs:
+  myDirectoryOutput:
+    Description: My directory
+    Value: !Ref myDirectory
+    Export:
+      Name: myDirectory
+  myDirectoryDNS1Output:
+    Description: First DNS IP from Directory
+    Value: !Select [0, !GetAtt myDirectory.DnsIpAddresses]
+    Export:
+      Name: myDirectoryDNS1
+  myDirectoryDNS2Output:
+    Description: Second DNS IP from Directory
+    Value: !Select [1, !GetAtt myDirectory.DnsIpAddresses]
+    Export:
+      Name: myDirectoryDNS2
