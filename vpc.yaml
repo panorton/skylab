@@ -196,6 +196,16 @@ Resources:
         Ref: RouteTablePub2b
       SubnetId: 
         Ref: PubSubnet2B
+  myFlowLog:
+    Type: AWS::EC2::FlowLog
+    Properties:
+      DeliverLogsPermissionArn: 
+        !Sub |-
+          arn:aws:iam::${AWS::AccountId}:role/CloudTrail_CloudWatchLogs_Role
+      ResourceId: !Ref myVPC
+      ResourceType: VPC
+      TrafficType: ALL
+      LogGroupName: cloudtrail-mgmt-logs
 Outputs:
   vpcidoutput:
     Description: Resource ID of VPC
