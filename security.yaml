@@ -187,6 +187,44 @@ Resources:
               !Sub |-
                 ${CloudTrailSNS}
             Action: "SNS:Publish"
+  ConfigRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ConfigRole
+        Path: "/"
+        AssumeRolePolicyDocument: 
+          Version: '2012-10-17'
+          Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: config.amazonaws.com
+            Action: sts:AssumeRole
+        Policies:
+          - 
+            PolicyName: "root"
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+              - Effect: Allow
+                Action:
+                - s3:PutObject
+                Resource:
+                  !Sub |-
+                    arn:aws:s3:::${S3CloudTrail}/AWSLogs/${AWS::AccountId}/*
+                Condition:
+                  StringLike:
+                    s3:x-amz-acl: bucket-owner-full-control
+              - Effect: Allow
+                Action:
+                - s3:GetBucketAcl
+                Resource: 
+                  !Sub |-
+                    arn:aws:s3:::${S3CloudTrail}
+  ConfigDelivery:
+    Type: AWS::Config::DeliveryChannel
+    Properties:
+      S3BucketName: !Ref S3CloudTrail
 Outputs:
   CloudTrailRoleOutput:
     Description: CloudTrail CloudWatch Logs Role
