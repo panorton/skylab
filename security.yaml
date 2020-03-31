@@ -187,13 +187,47 @@ Resources:
               !Sub |-
                 ${CloudTrailSNS}
             Action: "SNS:Publish"
+  CloudWatchAlarmSNS:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: sns-mgmt-cloudwatch-alarms
+  CloudWatchAlarmSNSPolicy: 
+    Type: AWS::SNS::TopicPolicy
+    Properties: 
+      Topics: 
+        - Ref: "CloudWatchAlarmSNS"
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Sid: __default_statement_ID
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+            - SNS:GetTopicAttributes
+            - SNS:SetTopicAttributes
+            - SNS:AddPermission
+            - SNS:RemovePermission
+            - SNS:DeleteTopic
+            - SNS:Subscribe
+            - SNS:ListSubscriptionsByTopic
+            - SNS:Publish
+            - SNS:Receive
+            Resource: 
+              !Sub |-
+                ${CloudWatchAlarmSNS}
+            Condition:
+              StringEquals:
+                AWS:SourceOwner: 
+                  !Sub |-
+                    '${AWS::AccountId}'
           - Sid: "AWSCloudWatchSNSPolicy"
             Effect: "Allow"
             Principal: 
-              Service: "events.amazonaws.com"
+              Service: "cloudwatch.amazonaws.com"
             Resource: 
               !Sub |-
-                ${CloudTrailSNS}
+                ${CloudWatchAlarmSNS}
             Action: "SNS:Publish"
   MetricUnauthAPI:
     Type: AWS::Logs::MetricFilter
@@ -210,7 +244,7 @@ Resources:
     Properties: 
       AlarmName: unauthorized_api_calls_alarm
       AlarmActions:
-        - !Ref CloudTrailSNS
+        - !Ref CloudWatchAlarmSNS
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
       Metrics:
