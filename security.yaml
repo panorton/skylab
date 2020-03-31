@@ -229,6 +229,7 @@ Resources:
               !Sub |-
                 ${CloudWatchAlarmSNS}
             Action: "SNS:Publish"
+# 3.1 Ensure a log metric filter and alarm exist for unauthorized API calls
   MetricUnauthAPI:
     Type: AWS::Logs::MetricFilter
     Properties: 
@@ -252,6 +253,90 @@ Resources:
         MetricStat:
           Metric:
             MetricName: unauthorized_api_calls_metric
+            Namespace: CISBenchmark
+          Period: 300
+          Stat: Sum
+      Threshold: 1
+# 3.2 Ensure a log metric filter and alarm exist for Management Console sign-in without MFA
+  MetricNoMFASignIn:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ ($.eventName = "ConsoleLogin") && ($.additionalEventData.MFAUsed != "Yes") }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "no_mfa_console_signin_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  NoMFASignInAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: no_mfa_console_signin_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Metrics:
+      - Id: metric0
+        MetricStat:
+          Metric:
+            MetricName: no_mfa_console_signin_metric
+            Namespace: CISBenchmark
+          Period: 300
+          Stat: Sum
+      Threshold: 1
+# 3.3 Ensure a log metric filter and alarm exist for usage of "root" account
+  MetricRootUsage:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ $.userIdentity.type = "Root" && $.userIdentity.invokedBy NOT EXISTS && $.eventType != "AwsServiceEvent" }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "root_usage_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  RootUsageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: root_usage_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Metrics:
+      - Id: metric0
+        MetricStat:
+          Metric:
+            MetricName: root_usage_metric
+            Namespace: CISBenchmark
+          Period: 300
+          Stat: Sum
+      Threshold: 1
+# 3.4 Ensure a log metric filter and alarm exist for IAM policy changes
+  MetricIAMChanges:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{($.eventName=DeleteGroupPolicy)||($.eventName=DeleteRolePolicy)||($.eventNa me=DeleteUserPolicy)||($.eventName=PutGroupPolicy)||($.eventName=PutRolePolic y)||($.eventName=PutUserPolicy)||($.eventName=CreatePolicy)||($.eventName=Del etePolicy)||($.eventName=CreatePolicyVersion)||($.eventName=DeletePolicyVersi on)||($.eventName=AttachRolePolicy)||($.eventName=DetachRolePolicy)||($.event Name=AttachUserPolicy)||($.eventName=DetachUserPolicy)||($.eventName=AttachGr oupPolicy)||($.eventName=DetachGroupPolicy)}'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "iam_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  IAMChangesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: iam_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Metrics:
+      - Id: metric0
+        MetricStat:
+          Metric:
+            MetricName: iam_changes_metric
             Namespace: CISBenchmark
           Period: 300
           Stat: Sum
