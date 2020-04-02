@@ -248,14 +248,10 @@ Resources:
         - !Ref CloudWatchAlarmSNS
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
-      Metrics:
-      - Id: metric0
-        MetricStat:
-          Metric:
-            MetricName: unauthorized_api_calls_metric
-            Namespace: CISBenchmark
-          Period: 300
-          Stat: Sum
+      MetricName: unauthorized_api_calls_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
       Threshold: 1
 # 3.2 Ensure a log metric filter and alarm exist for Management Console sign-in without MFA
   MetricNoMFASignIn:
@@ -276,14 +272,10 @@ Resources:
         - !Ref CloudWatchAlarmSNS
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
-      Metrics:
-      - Id: metric0
-        MetricStat:
-          Metric:
-            MetricName: no_mfa_console_signin_metric
-            Namespace: CISBenchmark
-          Period: 300
-          Stat: Sum
+      MetricName: no_mfa_console_signin_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
       Threshold: 1
 # 3.3 Ensure a log metric filter and alarm exist for usage of "root" account
   MetricRootUsage:
@@ -304,14 +296,10 @@ Resources:
         - !Ref CloudWatchAlarmSNS
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
-      Metrics:
-      - Id: metric0
-        MetricStat:
-          Metric:
-            MetricName: root_usage_metric
-            Namespace: CISBenchmark
-          Period: 300
-          Stat: Sum
+      MetricName: root_usage_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
       Threshold: 1
 # 3.4 Ensure a log metric filter and alarm exist for IAM policy changes
   MetricIAMChanges:
@@ -332,14 +320,10 @@ Resources:
         - !Ref CloudWatchAlarmSNS
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
-      Metrics:
-      - Id: metric0
-        MetricStat:
-          Metric:
-            MetricName: iam_changes_metric
-            Namespace: CISBenchmark
-          Period: 300
-          Stat: Sum
+      MetricName: iam_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
       Threshold: 1
 # 3.5 Ensure a log metric filter and alarm exist for CloudTrail configuration changes
   MetricCloudTrailCfgChange:
@@ -360,14 +344,10 @@ Resources:
         - !Ref CloudWatchAlarmSNS
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
-      Metrics:
-      - Id: metric0
-        MetricStat:
-          Metric:
-            MetricName: cloudtrail_cfg_changes_metric
-            Namespace: CISBenchmark
-          Period: 300
-          Stat: Sum
+      MetricName: cloudtrail_cfg_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
       Threshold: 1
 # 3.6 Ensure a log metric filter and alarm exist for AWS Management Console authentication failures
   MetricConsoleAuthFail:
@@ -388,14 +368,202 @@ Resources:
         - !Ref CloudWatchAlarmSNS
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
-      Metrics:
-      - Id: metric0
-        MetricStat:
-          Metric:
-            MetricName: console_signin_failure_metric
-            Namespace: CISBenchmark
-          Period: 300
-          Stat: Sum
+      MetricName: console_signin_failure_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+# 3.7 Ensure a log metric filter and alarm exist for disabling or scheduled deletion of customer created CMKs
+  MetricDisableCMK:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{($.eventSource = kms.amazonaws.com) && (($.eventName=DisableKey)||($.eventName=ScheduleKeyDeletion)) }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "disable_or_delete_cmk_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  DisableCMKAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: disable_or_delete_cmk_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: disable_or_delete_cmk_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+# 3.8 Ensure a log metric filter and alarm exist for S3 bucket policy changes
+  MetricS3PolicyChange:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ ($.eventSource = s3.amazonaws.com) && (($.eventName = PutBucketAcl) || ($.eventName = PutBucketPolicy) || ($.eventName = PutBucketCors) || ($.eventName = PutBucketLifecycle) || ($.eventName = PutBucketReplication) || ($.eventName = DeleteBucketPolicy) || ($.eventName = DeleteBucketCors) || ($.eventName = DeleteBucketLifecycle) || ($.eventName = DeleteBucketReplication)) }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "s3_bucket_policy_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  S3PolicyChangeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: s3_bucket_policy_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: s3_bucket_policy_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+# 3.9 Ensure a log metric filter and alarm exist for AWS Config configuration changes
+  MetricAWSConfigChange:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ ($.eventSource = config.amazonaws.com) && (($.eventName=StopConfigurationRecorder)||($.eventName=DeleteDeliveryChannel) ||($.eventName=PutDeliveryChannel)||($.eventName=PutConfigurationRecorder)) }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "aws_config_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  AWSConfigAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: aws_config_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: aws_config_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+# 3.10 Ensure a log metric filter and alarm exist for security group changes
+  MetricSGChange:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ ($.eventName = AuthorizeSecurityGroupIngress) || ($.eventName = AuthorizeSecurityGroupEgress) || ($.eventName = RevokeSecurityGroupIngress) || ($.eventName = RevokeSecurityGroupEgress) || ($.eventName = CreateSecurityGroup) || ($.eventName = DeleteSecurityGroup) }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "security_group_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  SGChangeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: security_group_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: security_group_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+# 3.11 Ensure a log metric filter and alarm exist for changes to Network Access Control Lists 
+  MetricNACLChange:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ ($.eventName = CreateNetworkAcl) || ($.eventName = CreateNetworkAclEntry) || ($.eventName = DeleteNetworkAcl) || ($.eventName = DeleteNetworkAclEntry) || ($.eventName = ReplaceNetworkAclEntry) || ($.eventName = ReplaceNetworkAclAssociation) }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "nacl_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  NACLChangeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: nacl_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: nacl_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+# 3.12 Ensure a log metric filter and alarm exist for changes to network gateways 
+  MetricGWChange:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ ($.eventName = CreateCustomerGateway) || ($.eventName = DeleteCustomerGateway) || ($.eventName = AttachInternetGateway) || ($.eventName = CreateInternetGateway) || ($.eventName = DeleteInternetGateway) || ($.eventName = DetachInternetGateway) }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "network_gw_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  GWChangeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: network_gw_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: network_gw_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+# 3.13 Ensure a log metric filter and alarm exist for route table changes
+  MetricRouteTableChange:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ ($.eventName = CreateRoute) || ($.eventName = CreateRouteTable) || ($.eventName = ReplaceRoute) || ($.eventName = ReplaceRouteTableAssociation) || ($.eventName = DeleteRouteTable) || ($.eventName = DeleteRoute) || ($.eventName = DisassociateRouteTable) }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "route_table_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  RouteTableChangeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: route_table_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: route_table_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+# 3.14 Ensure a log metric filter and alarm exist for VPC changes
+  MetricVPCChange:
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      FilterPattern: '{ ($.eventName = CreateVpc) || ($.eventName = DeleteVpc) || ($.eventName = ModifyVpcAttribute) || ($.eventName = AcceptVpcPeeringConnection) || ($.eventName = CreateVpcPeeringConnection) || ($.eventName = DeleteVpcPeeringConnection) || ($.eventName = RejectVpcPeeringConnection) || ($.eventName = AttachClassicLinkVpc) || ($.eventName = DetachClassicLinkVpc) || ($.eventName = DisableVpcClassicLink) || ($.eventName = EnableVpcClassicLink) }'
+      LogGroupName: !Ref myVPCCloudWatch
+      MetricTransformations: 
+        - 
+          MetricName: "vpc_changes_metric"
+          MetricNamespace: "CISBenchmark"
+          MetricValue: "1"
+  VPCAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmName: vpc_changes_alarm
+      AlarmActions:
+        - !Ref CloudWatchAlarmSNS
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: vpc_changes_metric
+      Namespace: CISBenchmark
+      Period: 300
+      Statistic: Sum
       Threshold: 1
   ConfigRole:
     Type: AWS::IAM::Role
