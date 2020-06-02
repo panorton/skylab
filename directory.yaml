@@ -14,11 +14,14 @@ Parameters:
     MinLength: 12
     MaxLength: 32
     AllowedPattern: ^[a-zA-Z0-9]*$
+  myDomainName:
+    Description: Enter in a name for your domain. Example, mydevdomain.internal
+    Type: String
 Resources:
   myDirectory:
     Type: AWS::DirectoryService::MicrosoftAD
     Properties:
-      Name: "theproduct.internal"
+      Name: !Ref myDomainName
       Edition: Standard
       Password:
         Ref: myPassword
@@ -30,7 +33,7 @@ Resources:
   myDHCPOptions:
     Type: AWS::EC2::DHCPOptions
     Properties:
-      DomainName: theproduct.internal
+      DomainName: !Ref myDomainName
       DomainNameServers:
         - !Select [0, !GetAtt myDirectory.DnsIpAddresses]
         - !Select [1, !GetAtt myDirectory.DnsIpAddresses]
