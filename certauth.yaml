@@ -7,12 +7,15 @@ Parameters:
     Default: '2019-02-05 08:00:00'
     AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
     ConstraintDescription: Date and time of creation
+  CRLBucketName:
+    Description: Enter in a name for your bucket. It must be globally unique, 3-63 characters long, and can contain only lower-case characters, numbers, periods, and dashes.
+    Type: String
 Resources:
   CRLBucket:
     Type: "AWS::S3::Bucket"
     DeletionPolicy: Retain # RETAIN when you delete the CF stack
     Properties:
-      BucketName: theproduct-ca-crl-bucket
+      BucketName: !Ref CRLBucketName
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -22,7 +25,7 @@ Resources:
       Tags:
         -
           Key: "Name"
-          Value: "theproduct-ca-crl-bucket" #Enter your bucket name here
+          Value: !Ref CRLBucketName #Enter your bucket name here
         -
           Key: "Description"
           Value: "S3 Bucket for CA CRL" #Enter your description here
