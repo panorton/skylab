@@ -7,189 +7,7 @@ Parameters:
     Default: '2019-02-05 08:00:00'
     AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
     ConstraintDescription: Date and time of creation
-  CloudTrailBucketName:
-    Description: Enter in a name for your bucket. It must be globally unique, 3-63 characters long, and can contain only lower-case characters, numbers, periods, and dashes.
-    Type: String
 Resources:
-  S3CloudTrail:
-    Type: "AWS::S3::Bucket"
-    DeletionPolicy: Retain # RETAIN when you delete the CF stack
-    Properties:
-      BucketName: !Ref CloudTrailBucketName
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: "AES256"
-      VersioningConfiguration:
-        Status: Enabled
-      Tags:
-        -
-          Key: "Name"
-          Value: !Ref CloudTrailBucketName #Enter your bucket name here
-        -
-          Key: "Description"
-          Value: "S3 Bucket for CloudTrail" #Enter your description here
-  S3CloudTrailPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties: 
-      Bucket: !Ref S3CloudTrail
-      PolicyDocument:
-        Statement:
-        - Sid: Stmt1533652298100
-          Action: s3:*
-          Effect: Deny
-          Resource:
-            !Sub |-
-              arn:aws:s3:::${S3CloudTrail}
-          Condition:
-            Bool:
-              aws:SecureTransport: 'false'
-          Principal: "*"
-        - Sid: "AWSCloudTrailAclCheck"
-          Effect: "Allow"
-          Principal: 
-            Service: "cloudtrail.amazonaws.com"
-          Action: "s3:GetBucketAcl"
-          Resource: 
-            !Sub |-
-              arn:aws:s3:::${S3CloudTrail}
-        - Sid: "AWSCloudTrailWrite"
-          Effect: "Allow"
-          Principal: 
-            Service: "cloudtrail.amazonaws.com"
-          Action: "s3:PutObject"
-          Resource:
-            !Sub |-
-              arn:aws:s3:::${S3CloudTrail}/AWSLogs/${AWS::AccountId}/*
-          Condition: 
-            StringEquals:
-              s3:x-amz-acl: "bucket-owner-full-control"
-  myVPCCloudWatch:
-    Type: AWS::Logs::LogGroup
-    Properties: 
-      LogGroupName: cloudtrail-mgmt-logs
-      RetentionInDays: 180
-  CloudTrailCloudWatchLogsRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: CloudTrail_CloudWatchLogs_Role
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          -
-            Effect: "Allow"
-            Principal:
-              Service:
-                - "vpc-flow-logs.amazonaws.com"
-                - "cloudtrail.amazonaws.com"
-            Action: 
-              - "sts:AssumeRole"
-      Path: "/"
-      Policies: 
-        - 
-          PolicyName: "cloudtrail-mgmt-logs-policy"
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-            - Sid: AWSCloudTrailCreateLogStream
-              Effect: Allow
-              Action:
-              - logs:CreateLogStream
-              Resource:
-                !Sub |-
-                  arn:aws:logs:us-west-2:${AWS::AccountId}:log-group:cloudtrail-mgmt-logs:log-stream:${AWS::AccountId}_CloudTrail_us-west-2*
-            - Sid: AWSCloudTrailPutLogEvents
-              Effect: Allow
-              Action:
-              - logs:PutLogEvents
-              Resource:
-                !Sub |-
-                  arn:aws:logs:us-west-2:${AWS::AccountId}:log-group:cloudtrail-mgmt-logs:log-stream:${AWS::AccountId}_CloudTrail_us-west-2*
-        - 
-          PolicyName: CloudTrail_CloudWatchLogs_Policy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-            - Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-              - logs:DescribeLogGroups
-              - logs:DescribeLogStreams
-              Effect: Allow
-              Resource: "*"
-  myTrail: 
-    DependsOn: 
-      - S3CloudTrailPolicy
-      - SNSPolicy
-    Type: AWS::CloudTrail::Trail
-    Properties: 
-      S3BucketName: 
-        Ref: S3CloudTrail
-      SnsTopicName: 
-        Fn::GetAtt: 
-          - CloudTrailSNS
-          - TopicName
-      IsLogging: true
-      IsMultiRegionTrail: true
-      IncludeGlobalServiceEvents: true
-      TrailName: mgmt-cloudtrail
-      KMSKeyId: alias/s3-mgmt-cloudtrail-kms
-      EnableLogFileValidation: true
-      CloudWatchLogsLogGroupArn: 
-        !Sub |-
-          arn:aws:logs:us-west-2:${AWS::AccountId}:log-group:cloudtrail-mgmt-logs:*
-      CloudWatchLogsRoleArn: 
-        !Sub |-
-          arn:aws:iam::${AWS::AccountId}:role/CloudTrail_CloudWatchLogs_Role
-      EventSelectors:
-        - DataResources:
-          - Type: AWS::S3::Object
-            Values:
-                - 'arn:aws:s3'
-        - ReadWriteType: All
-  CloudTrailSNS:
-    Type: AWS::SNS::Topic
-    Properties: 
-      TopicName: sns-mgmt-cloudtrail
-  SNSPolicy: 
-    Type: AWS::SNS::TopicPolicy
-    Properties: 
-      Topics: 
-        - Ref: "CloudTrailSNS"
-      PolicyDocument: 
-        Version: "2012-10-17"
-        Statement: 
-          - Sid: __default_statement_ID
-            Effect: Allow
-            Principal:
-              AWS: "*"
-            Action:
-            - SNS:GetTopicAttributes
-            - SNS:SetTopicAttributes
-            - SNS:AddPermission
-            - SNS:RemovePermission
-            - SNS:DeleteTopic
-            - SNS:Subscribe
-            - SNS:ListSubscriptionsByTopic
-            - SNS:Publish
-            - SNS:Receive
-            Resource: 
-              !Sub |-
-                ${CloudTrailSNS}
-            Condition:
-              StringEquals:
-                AWS:SourceOwner: 
-                  !Sub |-
-                    '${AWS::AccountId}'
-          - Sid: "AWSCloudTrailSNSPolicy"
-            Effect: "Allow"
-            Principal: 
-              Service: "cloudtrail.amazonaws.com"
-            Resource: 
-              !Sub |-
-                ${CloudTrailSNS}
-            Action: "SNS:Publish"
   CloudWatchAlarmSNS:
     Type: AWS::SNS::Topic
     Properties: 
@@ -237,7 +55,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.errorCode = "*UnauthorizedOperation") || ($.errorCode = "AccessDenied*") }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "unauthorized_api_calls_metric"
@@ -261,7 +79,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName = "ConsoleLogin") && ($.additionalEventData.MFAUsed != "Yes") }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "no_mfa_console_signin_metric"
@@ -285,7 +103,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ $.userIdentity.type = "Root" && $.userIdentity.invokedBy NOT EXISTS && $.eventType != "AwsServiceEvent" }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "root_usage_metric"
@@ -309,7 +127,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName=DeleteGroupPolicy) || ($.eventName=DeleteRolePolicy) || ($.eventName=DeleteUserPolicy) || ($.eventName=PutGroupPolicy) || ($.eventName=PutRolePolicy) || ($.eventName=PutUserPolicy) || ($.eventName=CreatePolicy) || ($.eventName=DeletePolicy) || ($.eventName=CreatePolicyVersion) || ($.eventName=DeletePolicyVersion) || ($.eventName=AttachRolePolicy) || ($.eventName=DetachRolePolicy) || ($.eventName=AttachUserPolicy) || ($.eventName=DetachUserPolicy) || ($.eventName=AttachGroupPolicy) || ($.eventName=DetachGroupPolicy) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "iam_changes_metric"
@@ -333,7 +151,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName = CreateTrail) || ($.eventName = UpdateTrail) || ($.eventName = DeleteTrail) || ($.eventName = StartLogging) || ($.eventName = StopLogging) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "cloudtrail_cfg_changes_metric"
@@ -357,7 +175,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName = ConsoleLogin) && ($.errorMessage = "Failed authentication") }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "console_signin_failure_metric"
@@ -381,7 +199,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{($.eventSource = kms.amazonaws.com) && (($.eventName=DisableKey)||($.eventName=ScheduleKeyDeletion)) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "disable_or_delete_cmk_changes_metric"
@@ -405,7 +223,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventSource = s3.amazonaws.com) && (($.eventName = PutBucketAcl) || ($.eventName = PutBucketPolicy) || ($.eventName = PutBucketCors) || ($.eventName = PutBucketLifecycle) || ($.eventName = PutBucketReplication) || ($.eventName = DeleteBucketPolicy) || ($.eventName = DeleteBucketCors) || ($.eventName = DeleteBucketLifecycle) || ($.eventName = DeleteBucketReplication)) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "s3_bucket_policy_changes_metric"
@@ -429,7 +247,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventSource = config.amazonaws.com) && (($.eventName=StopConfigurationRecorder)||($.eventName=DeleteDeliveryChannel) ||($.eventName=PutDeliveryChannel)||($.eventName=PutConfigurationRecorder)) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "aws_config_changes_metric"
@@ -453,7 +271,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName = AuthorizeSecurityGroupIngress) || ($.eventName = AuthorizeSecurityGroupEgress) || ($.eventName = RevokeSecurityGroupIngress) || ($.eventName = RevokeSecurityGroupEgress) || ($.eventName = CreateSecurityGroup) || ($.eventName = DeleteSecurityGroup) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "security_group_changes_metric"
@@ -477,7 +295,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName = CreateNetworkAcl) || ($.eventName = CreateNetworkAclEntry) || ($.eventName = DeleteNetworkAcl) || ($.eventName = DeleteNetworkAclEntry) || ($.eventName = ReplaceNetworkAclEntry) || ($.eventName = ReplaceNetworkAclAssociation) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "nacl_changes_metric"
@@ -501,7 +319,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName = CreateCustomerGateway) || ($.eventName = DeleteCustomerGateway) || ($.eventName = AttachInternetGateway) || ($.eventName = CreateInternetGateway) || ($.eventName = DeleteInternetGateway) || ($.eventName = DetachInternetGateway) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "network_gw_changes_metric"
@@ -525,7 +343,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName = CreateRoute) || ($.eventName = CreateRouteTable) || ($.eventName = ReplaceRoute) || ($.eventName = ReplaceRouteTableAssociation) || ($.eventName = DeleteRouteTable) || ($.eventName = DeleteRoute) || ($.eventName = DisassociateRouteTable) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "route_table_changes_metric"
@@ -549,7 +367,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties: 
       FilterPattern: '{ ($.eventName = CreateVpc) || ($.eventName = DeleteVpc) || ($.eventName = ModifyVpcAttribute) || ($.eventName = AcceptVpcPeeringConnection) || ($.eventName = CreateVpcPeeringConnection) || ($.eventName = DeleteVpcPeeringConnection) || ($.eventName = RejectVpcPeeringConnection) || ($.eventName = AttachClassicLinkVpc) || ($.eventName = DetachClassicLinkVpc) || ($.eventName = DisableVpcClassicLink) || ($.eventName = EnableVpcClassicLink) }'
-      LogGroupName: !Ref myVPCCloudWatch
+      LogGroupName: aws-controltower/CloudTrailLogs
       MetricTransformations: 
         - 
           MetricName: "vpc_changes_metric"
@@ -568,47 +386,41 @@ Resources:
       Period: 300
       Statistic: Sum
       Threshold: 1
-  ConfigRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: ConfigRole
-      Path: "/"
-      AssumeRolePolicyDocument: 
-        Version: '2012-10-17'
-        Statement:
-        - Sid: ''
-          Effect: Allow
-          Principal:
-            Service: config.amazonaws.com
-          Action: sts:AssumeRole
-      Policies:
-        - 
-          PolicyName: "root"
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-            - Effect: Allow
-              Action:
-              - s3:PutObject
-              Resource:
-                !Sub |-
-                  arn:aws:s3:::${S3CloudTrail}/AWSLogs/${AWS::AccountId}/*
-              Condition:
-                StringLike:
-                  s3:x-amz-acl: bucket-owner-full-control
-            - Effect: Allow
-              Action:
-              - s3:GetBucketAcl
-              Resource: 
-                !Sub |-
-                  arn:aws:s3:::${S3CloudTrail}
+  # ConfigRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     RoleName: ConfigRole
+  #     Path: "/"
+  #     AssumeRolePolicyDocument: 
+  #       Version: '2012-10-17'
+  #       Statement:
+  #       - Sid: ''
+  #         Effect: Allow
+  #         Principal:
+  #           Service: config.amazonaws.com
+  #         Action: sts:AssumeRole
+  #     Policies:
+  #       - 
+  #         PolicyName: "root"
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #           - Effect: Allow
+  #             Action:
+  #             - s3:PutObject
+  #             Resource:
+  #               !Sub |-
+  #                 arn:aws:s3:::${S3CloudTrail}/AWSLogs/${AWS::AccountId}/*
+  #             Condition:
+  #               StringLike:
+  #                 s3:x-amz-acl: bucket-owner-full-control
+  #           - Effect: Allow
+  #             Action:
+  #             - s3:GetBucketAcl
+  #             Resource: 
+  #               !Sub |-
+  #                 arn:aws:s3:::${S3CloudTrail}
   # ConfigDelivery:
   #   Type: AWS::Config::DeliveryChannel
   #   Properties:
   #     S3BucketName: !Ref S3CloudTrail
-Outputs:
-  CloudTrailRoleOutput:
-    Description: CloudTrail CloudWatch Logs Role
-    Value: !Ref CloudTrailCloudWatchLogsRole
-    Export:
-      Name: cloudtrail-role
