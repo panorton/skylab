@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Backup stack
+Parameters:
+  CreationDate:
+    Description: Date
+    Type: String
+    Default: '2019-02-05 08:00:00'
+    AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
+    ConstraintDescription: Date and time of creation
+Resources:
+  BackupRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: aws-backup-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "backup.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
+        - "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores"
+  DailyBackupPlan:
+    Type: "AWS::Backup::BackupPlan"
+    Properties:
+      BackupPlan:
+        BackupPlanName: "daily-backup-plan"
+        BackupPlanRule:
+          -
+            RuleName: "daily-backup-rule"
+            TargetBackupVault: Default
+            ScheduleExpression: "cron(0 5 ? * * *)"
+            Lifecycle:
+              DeleteAfterDays: 28
+  BackupTags:
+    Type: "AWS::Backup::BackupSelection"
+    Properties:
+      BackupSelection:
+        SelectionName: "TagBasedBackupSelection"
+        IamRoleArn: !GetAtt BackupRole.Arn
+        ListOfTags:
+          -
+            ConditionType: "STRINGEQUALS"
+            ConditionKey: "backup"
+            ConditionValue: "daily"
+      BackupPlanId: !Ref DailyBackupPlan 
