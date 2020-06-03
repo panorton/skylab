@@ -7,6 +7,9 @@ Parameters:
     Default: '2019-02-05 08:00:00'
     AllowedPattern: "^\\d{4}(-\\d{2}){2} (\\d{2}:){2}\\d{2}$"
     ConstraintDescription: Date and time of creation
+  myCertARN:
+    Description: The ARN of your SSL certificate for the Client VPN server.
+    Type: String
 Resources:
   ClientVPNSubnet:
     Type: AWS::EC2::Subnet
@@ -31,7 +34,7 @@ Resources:
       DnsServers:
         - !ImportValue myDirectoryDNS1
         - !ImportValue myDirectoryDNS2
-      ServerCertificateArn: arn:aws:acm:us-west-2:648971150110:certificate/29fe637f-6004-4969-95d2-7d0b697c6233
+      ServerCertificateArn: !Ref myCertARN
       TagSpecifications:
         - ResourceType: "client-vpn-endpoint"
           Tags:
