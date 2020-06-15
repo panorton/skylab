@@ -206,6 +206,14 @@ Resources:
       ResourceType: VPC
       TrafficType: ALL
       LogGroupName: cloudtrail-mgmt-logs
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Private Subnets
+      DBSubnetGroupName: private-subnets
+      SubnetIds:
+        - !Ref PrivSubnet2A
+        - !Ref PrivSubnet2B
 Outputs:
   vpcidoutput:
     Description: Resource ID of VPC
