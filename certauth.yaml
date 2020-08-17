@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: The Product Certificate Authority Stack
+Description: Skylab Certificate Authority Stack
 Parameters:
   CreationDate:
     Description: Date
@@ -56,9 +56,9 @@ Resources:
         Country: US
         State: California
         Locality: La Jolla
-        Organization: The Product
+        Organization: Skylab
         OrganizationalUnit: Information Technology
-        CommonName: theproduct.internal
+        CommonName: skylab.internal
       RevocationConfiguration:
         CrlConfiguration:
           Enabled: true

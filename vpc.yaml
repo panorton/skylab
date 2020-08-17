@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: The Product VPC Stack
+Description: Skylab VPC Stack
 Parameters:
   CreationDate:
     Description: Date
@@ -14,7 +14,7 @@ Resources:
       CidrBlock: 10.0.0.0/16
       Tags:
       - Key: Name
-        Value: TheProduct-VPC
+        Value: Skylab-VPC
   PubSubnet2A:
     Type: AWS::EC2::Subnet
     Properties:
@@ -24,7 +24,7 @@ Resources:
       AvailabilityZone: "us-west-2a"
       Tags:
       - Key: Name
-        Value: TheProduct-Public-2A
+        Value: Skylab-Public-2A
   PubSubnet2B:
     Type: AWS::EC2::Subnet
     Properties:
@@ -34,7 +34,7 @@ Resources:
       AvailabilityZone: "us-west-2b"
       Tags:
       - Key: Name
-        Value: TheProduct-Public-2B
+        Value: Skylab-Public-2B
   PrivSubnet2A:
     Type: AWS::EC2::Subnet
     Properties:
@@ -44,7 +44,7 @@ Resources:
       AvailabilityZone: "us-west-2a"
       Tags:
       - Key: Name
-        Value: TheProduct-Private-2A
+        Value: Skylab-Private-2A
   PrivSubnet2B:
     Type: AWS::EC2::Subnet
     Properties:
@@ -54,13 +54,13 @@ Resources:
       AvailabilityZone: "us-west-2b"
       Tags:
       - Key: Name
-        Value: TheProduct-Private-2B
+        Value: Skylab-Private-2B
   myInetGw:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
       - Key: Name
-        Value: TheProduct-InetGw
+        Value: Skylab-InetGw
   myInetGwAttach:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -89,7 +89,7 @@ Resources:
         Ref: PubSubnet2A
       Tags:
       - Key: Name
-        Value: TheProduct-NatGateway-2A
+        Value: Skylab-NatGateway-2A
   NATGw2B:
     Type: AWS::EC2::NatGateway
     Properties:
@@ -101,7 +101,7 @@ Resources:
         Ref: PubSubnet2B
       Tags:
       - Key: Name
-        Value: TheProduct-NatGateway-2B
+        Value: Skylab-NatGateway-2B
   RouteTablePriv2A:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -109,7 +109,7 @@ Resources:
         Ref: myVPC
       Tags:
       - Key: Name
-        Value: theproduct-routetable-private2a
+        Value: Skylab-routetable-private2a
   RouteNatGW2A:
     Type: AWS::EC2::Route
     DependsOn: myInetGw
@@ -133,7 +133,7 @@ Resources:
         Ref: myVPC
       Tags:
       - Key: Name
-        Value: theproduct-routetable-private2b
+        Value: Skylab-routetable-private2b
   RouteNatGW2B:
     Type: AWS::EC2::Route
     DependsOn: myInetGw
@@ -157,7 +157,7 @@ Resources:
         Ref: myVPC
       Tags:
       - Key: Name
-        Value: theproduct-routetable-public2a
+        Value: Skylab-routetable-public2a
   RouteInetGw2A:
     Type: AWS::EC2::Route
     Properties: 
@@ -180,7 +180,7 @@ Resources:
         Ref: myVPC
       Tags:
       - Key: Name
-        Value: theproduct-routetable-public2b
+        Value: Skylab-routetable-public2b
   RouteInetGw2b:
     Type: AWS::EC2::Route
     Properties: 

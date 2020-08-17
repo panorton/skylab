@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: The Product Client VPN Stack
+Description: Skylab Client VPN Stack
 Parameters:
   CreationDate:
     Description: Date
@@ -19,7 +19,7 @@ Resources:
       AvailabilityZone: "us-west-2a"
       Tags:
       - Key: Name
-        Value: TheProduct-ClientVPNSubnet
+        Value: Skylab-ClientVPNSubnet
   myClientVpnEndpoint:
     Type: AWS::EC2::ClientVpnEndpoint
     Properties:
@@ -39,7 +39,7 @@ Resources:
         - ResourceType: "client-vpn-endpoint"
           Tags:
           - Key: "Name"
-            Value: "theproduct-clientvpn"
+            Value: "skylab-clientvpn"
       TransportProtocol: "udp"
       SplitTunnel: true
   myClientVpnEndpointAssoc:

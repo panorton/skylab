@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: The Product Security Stack
+Description: Skylab Security Stack
 Parameters:
   CreationDate:
     Description: Date

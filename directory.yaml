@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: The Product Directory Service Stack
+Description: Skylab Directory Service Stack
 Parameters:
   CreationDate:
     Description: Date
@@ -46,7 +46,7 @@ Resources:
       NetbiosNodeType: 2
       Tags:
       - Key: Name
-        Value: theproduct-dhcpopt
+        Value: skylab-dhcpopt
   myDHCPOptionsAssoc:
     Type: AWS::EC2::VPCDHCPOptionsAssociation
     Properties:
